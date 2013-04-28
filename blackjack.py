@@ -49,30 +49,44 @@ def blackjack():
 			hand.append(hit())
 		return hand
 
-	player_hand = deal_until(lambda hand: raw_input("hand: %s hit? y/n" %hand) == 'y')
-	dealer_hand = deal_until(lambda hand: sum(hand) < 17)
-
-
-	dscore = 0
-	pscore = 0
-	phand = [hit(), hit()]
-	pscore = sum(phand)
-	if pscore == 21:
-		print 'Blackjack!  You Win!'
-	else:
-		print 'You were dealt a ' + phand[0] + 'and a ' + phand[1] + '.  Your current total is ' + pscore + '.'
-		while pscore <= 21:
-			print 'Would you like to hit?'
-			action = raw_input('hit? y/n')
-			if action == 'y':
-				phand = phand.append(hit())
-				pscore = sum(phand)
-				print  'You were dealt a ' + phand[-1] + '.  Your current total is now ' + pscore + '.'
+	dealer_hand = deal_until(lambda hand: value(hand) < 17)
+	dealer_score = value(dealer_hand)
+	
+	def player_deal(hand):
+		if len(hand) < 2:
+			return True
+		player_score = value(hand)
+		print 'Your hand is now', hand, 'Your current total is', player_score
+		if player_score == 21:
+			if len(hand) == 2:
+				if len(dealer_hand) == 2 and dealer_score == 21:
+					print 'Two Blackjacks!  Tie game.'
+				else: 
+					print "Blackjack! You beat the dealer's", dealer_score, 'You Win!'
 			else:
-				print 'Playing it safe, eh?  Lets see how the dealer does.'
-				return pscore
+				if dealer_score != 21:
+					print "21!  You beat the dealer's", dealer_score, "You Win!"
+				else:
+					print '21! Unfortunately, the dealer also has a 21. Tie Game.'
+		elif player_score > 21:
+			print 'Busted! Sorry, you lose.'
+		else:
+			action = raw_input('hit? y/n')
+			return action == 'y'
 
+	player_hand = deal_until(player_deal)
+	player_score = value(player_hand)
+	
+	if player_score < 21:
+		if dealer_score > 21:
+			print 'The dealer has busted. You win with a', player_score, '. Congrats!'
+		else:
+			if player_score > dealer_score:
+				print 'You win!  Your', player_score, "beat the dealer's", dealer_score, '.  Congrats!'
+			elif dealer_score > player_score:
+				print 'Sorry, Your', player_score, "can't beat the dealer's", dealer_score, '. You lose.'
+			else:
+				print 'Both you and the dealer have a', player_score, '. Tie game.'
 
-test_value()
 
 blackjack()
